@@ -53,4 +53,28 @@ public class Meeting
 
         CreatedAt = DateTime.UtcNow;
     }
+
+    public void UpdateDetails(
+    string title,
+    string? description,
+    string platform,
+    DateTime scheduledStartTime,
+    DateTime scheduledEndTime)
+    {
+        Title = title;
+        Description = description;
+        Platform = platform;
+
+        ScheduledStartTime =
+            DateTime.SpecifyKind(
+                scheduledStartTime,
+                DateTimeKind.Utc);
+
+        ScheduledEndTime =
+            DateTime.SpecifyKind(
+                scheduledEndTime,
+                DateTimeKind.Utc);
+
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

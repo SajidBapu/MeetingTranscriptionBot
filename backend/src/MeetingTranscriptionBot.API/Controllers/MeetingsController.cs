@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using MeetingTranscriptionBot.Application.Features.Meetings.Queries.GetMeetingById;
 using MeetingTranscriptionBot.Application.Features.Meetings.Commands.CreateMeeting;
+using MeetingTranscriptionBot.Application.Features.Meetings.Commands.UpdateMeeting;
 using MeetingTranscriptionBot.Application.Features.Meetings.Queries.GetMeetings;
 using Microsoft.AspNetCore.Mvc;
 
@@ -63,5 +64,36 @@ public class MeetingsController : ControllerBase
         }
 
         return Ok(meeting);
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(
+    Guid id,
+    UpdateMeetingCommand command,
+    CancellationToken cancellationToken)
+    {
+        if (id != command.Id)
+        {
+            return BadRequest(
+                "Route id and request id do not match.");
+        }
+
+
+        var updated = await _mediator.Send(
+            command,
+            cancellationToken);
+
+
+        if (!updated)
+        {
+            return NotFound(
+                new
+                {
+                    message = "Meeting not found."
+                });
+        }
+
+
+        return NoContent();
     }
 }
