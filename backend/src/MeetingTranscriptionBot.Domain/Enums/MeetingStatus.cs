@@ -3,7 +3,16 @@
 public enum MeetingStatus
 {
     Scheduled = 1,
-    InProgress = 2,
-    Completed = 3,
-    Cancelled = 4
+
+    Starting = 2,
+
+    Recording = 3,
+
+    Processing = 4,
+
+    Completed = 5,
+
+    Failed = 6,
+
+    Cancelled = 7
 }

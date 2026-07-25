@@ -1,4 +1,5 @@
 ﻿using MeetingTranscriptionBot.Domain.Enums;
+using MeetingTranscriptionBot.Domain.Common.Exceptions;
 
 namespace MeetingTranscriptionBot.Domain.Entities;
 
@@ -75,6 +76,48 @@ public class Meeting
                 scheduledEndTime,
                 DateTimeKind.Utc);
 
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    private bool CanTransitionTo(MeetingStatus newStatus)
+    {
+        return Status switch
+        {
+            MeetingStatus.Scheduled =>
+                newStatus == MeetingStatus.Starting ||
+                newStatus == MeetingStatus.Cancelled,
+
+            MeetingStatus.Starting =>
+                newStatus == MeetingStatus.Recording ||
+                newStatus == MeetingStatus.Failed,
+
+            MeetingStatus.Recording =>
+                newStatus == MeetingStatus.Processing ||
+                newStatus == MeetingStatus.Failed,
+
+            MeetingStatus.Processing =>
+                newStatus == MeetingStatus.Completed ||
+                newStatus == MeetingStatus.Failed,
+
+            MeetingStatus.Completed => false,
+
+            MeetingStatus.Cancelled => false,
+
+            MeetingStatus.Failed => false,
+
+            _ => false
+        };
+    }
+
+    public void UpdateStatus(MeetingStatus status)
+    {
+        if (!CanTransitionTo(status))
+        {
+            throw new BusinessRuleException(
+                 $"Cannot change meeting status from {Status} to {status}");
+        }
+
+        Status = status;
         UpdatedAt = DateTime.UtcNow;
     }
 }

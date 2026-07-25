@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
 using FluentValidation;
+using MeetingTranscriptionBot.Domain.Common.Exceptions;
 
 namespace MeetingTranscriptionBot.API.Middleware;
 
@@ -32,11 +33,34 @@ public sealed class ExceptionHandlingMiddleware
                 context,
                 exception);
         }
+        catch (BusinessRuleException exception)
+        {
+            context.Response.ContentType =
+                "application/json";
+
+            context.Response.StatusCode =
+                StatusCodes.Status400BadRequest;
+
+
+            var response = new
+            {
+                success = false,
+                message = exception.Message,
+                traceId = context.TraceIdentifier
+            };
+
+
+            await context.Response.WriteAsync(
+                JsonSerializer.Serialize(response));
+
+            return;
+        }
         catch (Exception exception)
         {
             _logger.LogError(
                 exception,
                 "Unhandled exception occurred");
+
 
             await HandleExceptionAsync(
                 context);

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using MeetingTranscriptionBot.Application.Common.Models;
 using MeetingTranscriptionBot.Application.Features.Meetings.DTOs;
 
 namespace MeetingTranscriptionBot.Application.Features.Meetings.Queries.GetMeetings;
@@ -6,4 +7,4 @@ namespace MeetingTranscriptionBot.Application.Features.Meetings.Queries.GetMeeti
 public record GetMeetingsQuery(
     int PageNumber = 1,
     int PageSize = 10
-) : IRequest<List<MeetingDto>>;
+) : IRequest<PagedResult<MeetingDto>>;

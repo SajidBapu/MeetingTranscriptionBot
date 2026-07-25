@@ -8,10 +8,10 @@ public interface IMeetingRepository
         Guid id,
         CancellationToken cancellationToken);
 
-    Task<List<Meeting>> GetAllAsync(
-        int pageNumber,
-        int pageSize,
-        CancellationToken cancellationToken);
+    Task<(List<Meeting> Items, int TotalCount)> GetAllAsync(
+         int pageNumber,
+         int pageSize,
+         CancellationToken cancellationToken);
 
     Task AddAsync(
         Meeting meeting,

@@ -27,17 +27,23 @@ public class MeetingRepository : IMeetingRepository
     }
 
 
-    public async Task<List<Meeting>> GetAllAsync(
+    public async Task<(List<Meeting> Items, int TotalCount)> GetAllAsync(
     int pageNumber,
     int pageSize,
     CancellationToken cancellationToken)
     {
-        return await _context.Meetings
-            .OrderByDescending(x => x.CreatedAt)
+        var totalCount = await _context.Meetings
+            .CountAsync(cancellationToken);
+
+        var meetings = await _context.Meetings
+            .OrderBy(x => x.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
+
+        return (meetings, totalCount);
     }
+
 
     public async Task AddAsync(
         Meeting meeting,

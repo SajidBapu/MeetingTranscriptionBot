@@ -3,6 +3,8 @@ using MeetingTranscriptionBot.Application.Features.Meetings.Queries.GetMeetingBy
 using MeetingTranscriptionBot.Application.Features.Meetings.Commands.CreateMeeting;
 using MeetingTranscriptionBot.Application.Features.Meetings.Commands.UpdateMeeting;
 using MeetingTranscriptionBot.Application.Features.Meetings.Queries.GetMeetings;
+using MeetingTranscriptionBot.Application.Features.Meetings.DTOs;
+using MeetingTranscriptionBot.Application.Features.Meetings.Commands.UpdateMeetingStatus;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MeetingTranscriptionBot.API.Controllers;
@@ -81,6 +83,32 @@ public class MeetingsController : ControllerBase
 
         var updated = await _mediator.Send(
             command,
+            cancellationToken);
+
+
+        if (!updated)
+        {
+            return NotFound(
+                new
+                {
+                    message = "Meeting not found."
+                });
+        }
+
+
+        return NoContent();
+    }
+
+    [HttpPut("{id:guid}/status")]
+    public async Task<IActionResult> UpdateStatus(
+    Guid id,
+    UpdateMeetingStatusDto request,
+    CancellationToken cancellationToken)
+    {
+        var updated = await _mediator.Send(
+            new UpdateMeetingStatusCommand(
+                id,
+                request.Status),
             cancellationToken);
 
 
