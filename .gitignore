@@ -1,0 +1,32 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build output
+bin/
+obj/
+
+# .NET
+*.dll
+*.exe
+
+# Logs
+*.log
+
+# Angular
+node_modules/
+dist/
+
+# Environment files
+.env
+
+# User secrets
+secrets.json
+
+# Database files
+*.db
+*.sqlite
+
+# Local development settings
+**/appsettings.Development.json

@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MeetingTranscriptionBot.API/MeetingTranscriptionBot.API.csproj" />
+    <Project Path="src/MeetingTranscriptionBot.Application/MeetingTranscriptionBot.Application.csproj" />
+    <Project Path="src/MeetingTranscriptionBot.Domain/MeetingTranscriptionBot.Domain.csproj" />
+    <Project Path="src/MeetingTranscriptionBot.Infrastructure/MeetingTranscriptionBot.Infrastructure.csproj" />
+  </Folder>
+</Solution>
