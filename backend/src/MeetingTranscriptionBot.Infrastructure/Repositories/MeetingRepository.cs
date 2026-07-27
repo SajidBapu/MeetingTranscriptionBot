@@ -132,4 +132,15 @@ public class MeetingRepository : IMeetingRepository
 
         return (items, totalCount);
     }
+
+    public async Task<Meeting?> GetDeletedByIdAsync(
+    Guid id,
+    CancellationToken cancellationToken)
+    {
+        return await _context.Meetings
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(
+                x => x.Id == id && x.IsDeleted,
+                cancellationToken);
+    }
 }

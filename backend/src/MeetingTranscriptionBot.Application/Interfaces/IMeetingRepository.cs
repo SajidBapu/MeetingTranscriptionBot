@@ -31,5 +31,7 @@ public interface IMeetingRepository
         int pageSize,
         CancellationToken cancellationToken);
 
-
+    Task<Meeting?> GetDeletedByIdAsync(
+    Guid id,
+    CancellationToken cancellationToken);
 }

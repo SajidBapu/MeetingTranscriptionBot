@@ -7,6 +7,7 @@ using MeetingTranscriptionBot.Application.Features.Meetings.Queries.GetMeetings;
 using MeetingTranscriptionBot.Application.Features.Meetings.DTOs;
 using MeetingTranscriptionBot.Application.Features.Meetings.Commands.UpdateMeetingStatus;
 using MeetingTranscriptionBot.Application.Features.Meetings.Queries.SearchMeetings;
+using MeetingTranscriptionBot.Application.Features.Meetings.Commands.RestoreMeeting;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MeetingTranscriptionBot.API.Controllers;
@@ -160,5 +161,28 @@ public class MeetingsController : ControllerBase
             cancellationToken);
 
         return Ok(result);
+    }
+
+    [HttpPut("{id:guid}/restore")]
+    public async Task<IActionResult> Restore(
+    Guid id,
+    CancellationToken cancellationToken)
+    {
+        var restored = await _mediator.Send(
+            new RestoreMeetingCommand(id),
+            cancellationToken);
+
+
+        if (!restored)
+        {
+            return NotFound(
+                new
+                {
+                    message = "Deleted meeting not found."
+                });
+        }
+
+
+        return NoContent();
     }
 }

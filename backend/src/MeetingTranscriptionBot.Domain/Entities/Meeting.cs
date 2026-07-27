@@ -129,12 +129,26 @@ public class Meeting
     {
         if (IsDeleted)
         {
-            throw new InvalidOperationException(
-                "Meeting is already deleted.");
+            throw new BusinessRuleException(
+                 "Meeting has already been deleted.");
         }
 
         IsDeleted = true;
         DeletedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
+
+    public void Restore()
+    {
+        if (!IsDeleted)
+        {
+            throw new BusinessRuleException(
+                "Meeting is not deleted.");
+        }
+
+        IsDeleted = false;
+        DeletedAt = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
 }
