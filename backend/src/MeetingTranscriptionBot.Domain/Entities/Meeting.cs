@@ -23,6 +23,10 @@ public class Meeting
 
     public DateTime? UpdatedAt { get; private set; }
 
+    public bool IsDeleted { get; private set; }
+
+    public DateTime? DeletedAt { get; private set; }
+
 
     private Meeting()
     {
@@ -118,6 +122,19 @@ public class Meeting
         }
 
         Status = status;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Delete()
+    {
+        if (IsDeleted)
+        {
+            throw new InvalidOperationException(
+                "Meeting is already deleted.");
+        }
+
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
 }
