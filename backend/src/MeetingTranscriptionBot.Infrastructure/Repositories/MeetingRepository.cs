@@ -17,12 +17,12 @@ public class MeetingRepository : IMeetingRepository
 
 
     public async Task<Meeting?> GetByIdAsync(
-        Guid id,
-        CancellationToken cancellationToken)
+    Guid id,
+    CancellationToken cancellationToken)
     {
         return await _context.Meetings
             .FirstOrDefaultAsync(
-                x => x.Id == id,
+                x => x.Id == id && !x.IsDeleted,
                 cancellationToken);
     }
 
@@ -33,9 +33,11 @@ public class MeetingRepository : IMeetingRepository
     CancellationToken cancellationToken)
     {
         var totalCount = await _context.Meetings
+            .Where(x => !x.IsDeleted)
             .CountAsync(cancellationToken);
 
         var meetings = await _context.Meetings
+            .Where(x => !x.IsDeleted)
             .OrderBy(x => x.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)

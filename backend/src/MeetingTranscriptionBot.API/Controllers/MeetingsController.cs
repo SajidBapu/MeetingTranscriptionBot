@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using MeetingTranscriptionBot.Application.Features.Meetings.Commands.DeleteMeeting;
 using MeetingTranscriptionBot.Application.Features.Meetings.Queries.GetMeetingById;
 using MeetingTranscriptionBot.Application.Features.Meetings.Commands.CreateMeeting;
 using MeetingTranscriptionBot.Application.Features.Meetings.Commands.UpdateMeeting;
@@ -113,6 +114,29 @@ public class MeetingsController : ControllerBase
 
 
         if (!updated)
+        {
+            return NotFound(
+                new
+                {
+                    message = "Meeting not found."
+                });
+        }
+
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(
+    Guid id,
+    CancellationToken cancellationToken)
+    {
+        var deleted = await _mediator.Send(
+            new DeleteMeetingCommand(id),
+            cancellationToken);
+
+
+        if (!deleted)
         {
             return NotFound(
                 new
