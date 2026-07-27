@@ -8,6 +8,7 @@ using MeetingTranscriptionBot.Application.Features.Meetings.DTOs;
 using MeetingTranscriptionBot.Application.Features.Meetings.Commands.UpdateMeetingStatus;
 using MeetingTranscriptionBot.Application.Features.Meetings.Queries.SearchMeetings;
 using MeetingTranscriptionBot.Application.Features.Meetings.Commands.RestoreMeeting;
+using MeetingTranscriptionBot.Application.Common.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MeetingTranscriptionBot.API.Controllers;
@@ -35,9 +36,11 @@ public class MeetingsController : ControllerBase
             cancellationToken);
 
         return CreatedAtAction(
-            nameof(GetById),
-            new { id = meetingId },
-            meetingId);
+             nameof(GetById),
+             new { id = meetingId },
+             ApiResponse<Guid>.Ok(
+             meetingId,
+             "Meeting created successfully."));
     }
 
 
@@ -50,7 +53,9 @@ public class MeetingsController : ControllerBase
             query,
             cancellationToken);
 
-        return Ok(meetings);
+        return Ok(
+            ApiResponse<PagedResult<MeetingDto>>.Ok(
+              meetings));
     }
 
 
@@ -65,10 +70,14 @@ public class MeetingsController : ControllerBase
 
         if (meeting is null)
         {
-            return NotFound();
+            return NotFound(
+               ApiResponse<MeetingDto>.Fail(
+                   "Meeting not found."));
         }
 
-        return Ok(meeting);
+        return Ok(
+            ApiResponse<MeetingDto>.Ok(
+                 meeting));
     }
 
     [HttpPut("{id:guid}")]
@@ -80,7 +89,8 @@ public class MeetingsController : ControllerBase
         if (id != command.Id)
         {
             return BadRequest(
-                "Route id and request id do not match.");
+                ApiResponse<bool>.Fail(
+                  "Route id and request id do not match."));
         }
 
 
@@ -92,14 +102,15 @@ public class MeetingsController : ControllerBase
         if (!updated)
         {
             return NotFound(
-                new
-                {
-                    message = "Meeting not found."
-                });
+               ApiResponse<bool>.Fail(
+                   "Meeting not found."));
         }
 
 
-        return NoContent();
+        return Ok(
+             ApiResponse<bool>.Ok(
+                 true,
+                  "Meeting updated successfully."));
     }
 
     [HttpPut("{id:guid}/status")]
@@ -118,14 +129,15 @@ public class MeetingsController : ControllerBase
         if (!updated)
         {
             return NotFound(
-                new
-                {
-                    message = "Meeting not found."
-                });
+                 ApiResponse<bool>.Fail(
+                     "Meeting not found."));
         }
 
 
-        return NoContent();
+        return Ok(
+             ApiResponse<bool>.Ok(
+                 true,
+                 "Meeting status updated successfully."));
     }
 
     [HttpDelete("{id:guid}")]
@@ -141,14 +153,15 @@ public class MeetingsController : ControllerBase
         if (!deleted)
         {
             return NotFound(
-                new
-                {
-                    message = "Meeting not found."
-                });
+                ApiResponse<bool>.Fail(
+                    "Meeting not found."));
         }
 
 
-        return NoContent();
+        return Ok(
+            ApiResponse<bool>.Ok(
+               true,
+               "Meeting deleted successfully."));
     }
 
     [HttpGet("search")]
@@ -160,7 +173,9 @@ public class MeetingsController : ControllerBase
             query,
             cancellationToken);
 
-        return Ok(result);
+        return Ok(
+            ApiResponse<PagedResult<MeetingDto>>.Ok(
+                result));
     }
 
     [HttpPut("{id:guid}/restore")]
@@ -176,13 +191,14 @@ public class MeetingsController : ControllerBase
         if (!restored)
         {
             return NotFound(
-                new
-                {
-                    message = "Deleted meeting not found."
-                });
+               ApiResponse<bool>.Fail(
+                   "Deleted meeting not found."));
         }
 
 
-        return NoContent();
+        return Ok(
+            ApiResponse<bool>.Ok(
+                true,
+                "Meeting restored successfully."));
     }
 }
