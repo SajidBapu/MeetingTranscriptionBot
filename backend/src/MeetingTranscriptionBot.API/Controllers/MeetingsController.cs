@@ -6,6 +6,7 @@ using MeetingTranscriptionBot.Application.Features.Meetings.Commands.UpdateMeeti
 using MeetingTranscriptionBot.Application.Features.Meetings.Queries.GetMeetings;
 using MeetingTranscriptionBot.Application.Features.Meetings.DTOs;
 using MeetingTranscriptionBot.Application.Features.Meetings.Commands.UpdateMeetingStatus;
+using MeetingTranscriptionBot.Application.Features.Meetings.Queries.SearchMeetings;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MeetingTranscriptionBot.API.Controllers;
@@ -147,5 +148,17 @@ public class MeetingsController : ControllerBase
 
 
         return NoContent();
+    }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> Search(
+    [FromQuery] SearchMeetingsQuery query,
+    CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(
+            query,
+            cancellationToken);
+
+        return Ok(result);
     }
 }

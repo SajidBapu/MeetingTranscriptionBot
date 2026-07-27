@@ -69,4 +69,67 @@ public class MeetingRepository : IMeetingRepository
         await _context.SaveChangesAsync(
             cancellationToken);
     }
+
+    public async Task<(List<Meeting> Items, int TotalCount)> SearchAsync(
+    string? title,
+    string? platform,
+    string? status,
+    DateTime? startDate,
+    DateTime? endDate,
+    int pageNumber,
+    int pageSize,
+    CancellationToken cancellationToken)
+    {
+        var query = _context.Meetings
+            .AsQueryable();
+
+
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            query = query.Where(x =>
+                x.Title.Contains(title));
+        }
+
+
+        if (!string.IsNullOrWhiteSpace(platform))
+        {
+            query = query.Where(x =>
+                x.Platform == platform);
+        }
+
+
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            query = query.Where(x =>
+                x.Status.ToString() == status);
+        }
+
+
+        if (startDate.HasValue)
+        {
+            query = query.Where(x =>
+                x.ScheduledStartTime >= startDate.Value);
+        }
+
+
+        if (endDate.HasValue)
+        {
+            query = query.Where(x =>
+                x.ScheduledEndTime <= endDate.Value);
+        }
+
+
+        var totalCount = await query.CountAsync(
+            cancellationToken);
+
+
+        var items = await query
+            .OrderByDescending(x => x.CreatedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+
+        return (items, totalCount);
+    }
 }

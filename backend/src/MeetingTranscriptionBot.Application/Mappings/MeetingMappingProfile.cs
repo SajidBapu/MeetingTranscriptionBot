@@ -1,8 +1,17 @@
-﻿using System;
+﻿using AutoMapper;
+using MeetingTranscriptionBot.Application.Features.Meetings.DTOs;
+using MeetingTranscriptionBot.Domain.Entities;
 
-public class Class1
+namespace MeetingTranscriptionBot.Application.Mappings;
+
+public sealed class MeetingMappingProfile : Profile
 {
-	public Class1()
-	{
-	}
+    public MeetingMappingProfile()
+    {
+        CreateMap<Meeting, MeetingDto>()
+            .ForMember(
+                destination => destination.Status,
+                options => options.MapFrom(
+                    source => source.Status.ToString()));
+    }
 }

@@ -5,6 +5,9 @@ namespace MeetingTranscriptionBot.Infrastructure.Persistence.Context;
 
 public class ApplicationDbContext : DbContext
 {
+    public DbSet<Meeting> Meetings { get; set; }
+
+
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -12,15 +15,18 @@ public class ApplicationDbContext : DbContext
     }
 
 
-    public DbSet<Meeting> Meetings => Set<Meeting>();
-
-
     protected override void OnModelCreating(
-        ModelBuilder modelBuilder)
+    ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(ApplicationDbContext).Assembly);
+
+
+        modelBuilder.Entity<Meeting>()
+            .HasQueryFilter(
+                x => !x.IsDeleted);
     }
 }

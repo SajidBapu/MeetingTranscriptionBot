@@ -20,4 +20,16 @@ public interface IMeetingRepository
     Task UpdateAsync(
         Meeting meeting,
         CancellationToken cancellationToken);
+
+    Task<(List<Meeting> Items, int TotalCount)> SearchAsync(
+        string? title,
+        string? platform,
+        string? status,
+        DateTime? startDate,
+        DateTime? endDate,
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken);
+
+
 }
