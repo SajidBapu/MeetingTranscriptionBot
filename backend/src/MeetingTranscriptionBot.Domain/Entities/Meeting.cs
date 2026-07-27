@@ -50,9 +50,15 @@ public class Meeting
 
         Platform = platform;
 
-        ScheduledStartTime = scheduledStartTime;
+        ScheduledStartTime =
+            DateTime.SpecifyKind(
+                scheduledStartTime,
+                DateTimeKind.Utc);
 
-        ScheduledEndTime = scheduledEndTime;
+        ScheduledEndTime =
+            DateTime.SpecifyKind(
+                scheduledEndTime,
+                DateTimeKind.Utc);
 
         Status = MeetingStatus.Scheduled;
 

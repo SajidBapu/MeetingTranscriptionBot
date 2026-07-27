@@ -28,7 +28,7 @@ public class MeetingsController : ControllerBase
 
     [HttpPost]
     public async Task<IActionResult> Create(
-        CreateMeetingCommand command,
+        [FromBody] CreateMeetingCommand command,
         CancellationToken cancellationToken)
     {
         var meetingId = await _mediator.Send(
@@ -83,7 +83,7 @@ public class MeetingsController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(
     Guid id,
-    UpdateMeetingCommand command,
+    [FromBody] UpdateMeetingCommand command,
     CancellationToken cancellationToken)
     {
         if (id != command.Id)
