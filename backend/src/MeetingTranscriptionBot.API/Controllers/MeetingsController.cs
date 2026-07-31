@@ -8,6 +8,7 @@ using MeetingTranscriptionBot.Application.Features.Meetings.DTOs;
 using MeetingTranscriptionBot.Application.Features.Meetings.Commands.UpdateMeetingStatus;
 using MeetingTranscriptionBot.Application.Features.Meetings.Queries.SearchMeetings;
 using MeetingTranscriptionBot.Application.Features.Meetings.Commands.RestoreMeeting;
+using MeetingTranscriptionBot.Application.Features.Meetings.Queries.GetMeetingStatusHistory;
 using MeetingTranscriptionBot.Application.Common.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -200,5 +201,20 @@ public class MeetingsController : ControllerBase
             ApiResponse<bool>.Ok(
                 true,
                 "Meeting restored successfully."));
+    }
+
+    [HttpGet("{id:guid}/history")]
+    public async Task<IActionResult> GetHistory(
+    Guid id,
+    CancellationToken cancellationToken)
+    {
+        var history = await _mediator.Send(
+            new GetMeetingStatusHistoryQuery(id),
+            cancellationToken);
+
+
+        return Ok(
+            ApiResponse<List<MeetingStatusHistoryDto>>.Ok(
+                history));
     }
 }

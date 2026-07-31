@@ -7,6 +7,8 @@ public class ApplicationDbContext : DbContext
 {
     public DbSet<Meeting> Meetings { get; set; }
 
+    public DbSet<MeetingStatusHistory> MeetingStatusHistories { get; set; }
+
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)

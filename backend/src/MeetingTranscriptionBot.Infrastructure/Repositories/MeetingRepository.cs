@@ -21,8 +21,9 @@ public class MeetingRepository : IMeetingRepository
     CancellationToken cancellationToken)
     {
         return await _context.Meetings
+            .Include(x => x.StatusHistory)
             .FirstOrDefaultAsync(
-                x => x.Id == id && !x.IsDeleted,
+                x => x.Id == id,
                 cancellationToken);
     }
 
@@ -61,14 +62,13 @@ public class MeetingRepository : IMeetingRepository
 
 
     public async Task UpdateAsync(
-        Meeting meeting,
-        CancellationToken cancellationToken)
+    Meeting meeting,
+    CancellationToken cancellationToken)
     {
-        _context.Meetings.Update(meeting);
-
         await _context.SaveChangesAsync(
             cancellationToken);
     }
+
 
     public async Task<(List<Meeting> Items, int TotalCount)> SearchAsync(
     string? title,
@@ -142,5 +142,15 @@ public class MeetingRepository : IMeetingRepository
             .FirstOrDefaultAsync(
                 x => x.Id == id && x.IsDeleted,
                 cancellationToken);
+    }
+
+    public async Task<List<MeetingStatusHistory>> GetStatusHistoryAsync(
+    Guid meetingId,
+    CancellationToken cancellationToken)
+    {
+        return await _context.Set<MeetingStatusHistory>()
+            .Where(x => x.MeetingId == meetingId)
+            .OrderBy(x => x.ChangedAt)
+            .ToListAsync(cancellationToken);
     }
 }

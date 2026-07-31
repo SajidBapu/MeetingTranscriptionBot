@@ -27,6 +27,8 @@ public class Meeting
 
     public DateTime? DeletedAt { get; private set; }
 
+    public ICollection<MeetingStatusHistory> StatusHistory { get; private set; }
+    = new List<MeetingStatusHistory>();
 
     private Meeting()
     {
@@ -124,11 +126,23 @@ public class Meeting
         if (!CanTransitionTo(status))
         {
             throw new BusinessRuleException(
-                 $"Cannot change meeting status from {Status} to {status}");
+                $"Cannot change meeting status from {Status} to {status}");
         }
 
+
+        var previousStatus = Status;
+
+
         Status = status;
+
         UpdatedAt = DateTime.UtcNow;
+
+
+        StatusHistory.Add(
+            new MeetingStatusHistory(
+                Id,
+                previousStatus,
+                status));
     }
 
     public void Delete()
@@ -156,5 +170,6 @@ public class Meeting
         DeletedAt = null;
         UpdatedAt = DateTime.UtcNow;
     }
+
 
 }

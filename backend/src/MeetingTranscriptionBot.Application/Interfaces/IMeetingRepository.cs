@@ -35,4 +35,8 @@ public interface IMeetingRepository
         Guid id,
         CancellationToken cancellationToken);
 
+    Task<List<MeetingStatusHistory>> GetStatusHistoryAsync(
+    Guid meetingId,
+    CancellationToken cancellationToken);
+
 }

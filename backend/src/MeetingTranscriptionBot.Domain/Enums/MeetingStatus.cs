@@ -1,4 +1,5 @@
-﻿namespace MeetingTranscriptionBot.Domain.Enums;
+﻿using MeetingTranscriptionBot.Domain.Enums;
+namespace MeetingTranscriptionBot.Domain.Enums;
 
 public enum MeetingStatus
 {

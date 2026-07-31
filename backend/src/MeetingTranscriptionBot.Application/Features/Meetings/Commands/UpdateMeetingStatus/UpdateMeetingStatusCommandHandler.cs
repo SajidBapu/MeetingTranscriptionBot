@@ -17,27 +17,30 @@ public sealed class UpdateMeetingStatusCommandHandler
 
 
     public async Task<bool> Handle(
-        UpdateMeetingStatusCommand request,
-        CancellationToken cancellationToken)
+    UpdateMeetingStatusCommand request,
+    CancellationToken cancellationToken)
     {
         var meeting = await _repository.GetByIdAsync(
             request.Id,
             cancellationToken);
 
-
         if (meeting is null)
-        {
             return false;
-        }
 
+        foreach (var h in meeting.StatusHistory)
+        {
+            Console.WriteLine($"{h.Id}  {h.PreviousStatus} -> {h.NewStatus}");
+        }
 
         meeting.UpdateStatus(request.Status);
 
 
-        await _repository.UpdateAsync(
-            meeting,
-            cancellationToken);
+        foreach (var h in meeting.StatusHistory)
+        {
+            Console.WriteLine($"{h.Id}  {h.PreviousStatus} -> {h.NewStatus}");
+        }
 
+        await _repository.UpdateAsync(meeting, cancellationToken);
 
         return true;
     }
