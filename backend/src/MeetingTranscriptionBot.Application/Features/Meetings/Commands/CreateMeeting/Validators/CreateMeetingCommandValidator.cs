@@ -20,7 +20,7 @@ public class CreateMeetingCommandValidator
         RuleFor(x => x.Platform)
             .NotEmpty()
             .WithMessage("Platform is required.")
-            .MaximumLength(100)
+            .MaximumLength(50)
             .WithMessage("Platform cannot exceed 100 characters.");
 
         RuleFor(x => x.ScheduledStartTime)

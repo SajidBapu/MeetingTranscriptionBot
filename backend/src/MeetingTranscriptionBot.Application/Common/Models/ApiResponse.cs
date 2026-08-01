@@ -2,23 +2,21 @@
 
 public sealed class ApiResponse<T>
 {
-    public bool Success { get; }
+    public bool Success { get; init; }
 
-    public string? Message { get; }
+    public string? Message { get; init; }
 
-    public T? Data { get; }
-
+    public T? Data { get; init; }
 
     private ApiResponse(
         bool success,
-        T? data,
-        string? message)
+        string? message,
+        T? data)
     {
         Success = success;
-        Data = data;
         Message = message;
+        Data = data;
     }
-
 
     public static ApiResponse<T> Ok(
         T data,
@@ -26,17 +24,16 @@ public sealed class ApiResponse<T>
     {
         return new ApiResponse<T>(
             true,
-            data,
-            message);
+            message,
+            data);
     }
-
 
     public static ApiResponse<T> Fail(
         string message)
     {
         return new ApiResponse<T>(
             false,
-            default,
-            message);
+            message,
+            default);
     }
 }

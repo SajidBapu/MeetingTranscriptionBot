@@ -1,8 +1,15 @@
-﻿using System;
+﻿using FluentValidation;
 
-public class Class1
+namespace MeetingTranscriptionBot.Application.Features.Meetings
+    .Commands.RestoreMeeting.Validators;
+
+public sealed class RestoreMeetingCommandValidator
+    : AbstractValidator<RestoreMeetingCommand>
 {
-	public Class1()
-	{
-	}
+    public RestoreMeetingCommandValidator()
+    {
+        RuleFor(x => x.Id)
+            .NotEmpty()
+            .WithMessage("Meeting id is required.");
+    }
 }

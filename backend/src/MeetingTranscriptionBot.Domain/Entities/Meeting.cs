@@ -67,6 +67,17 @@ public class Meeting
         CreatedAt = DateTime.UtcNow;
     }
 
+    private static void ValidateSchedule(
+    DateTime scheduledStartTime,
+    DateTime scheduledEndTime)
+    {
+        if (scheduledEndTime <= scheduledStartTime)
+        {
+            throw new BusinessRuleException(
+                "Scheduled end time must be after the start time.");
+        }
+    }
+
     public void UpdateDetails(
     string title,
     string? description,
