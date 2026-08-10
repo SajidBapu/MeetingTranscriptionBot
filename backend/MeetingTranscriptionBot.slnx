@@ -5,4 +5,7 @@
     <Project Path="src/MeetingTranscriptionBot.Domain/MeetingTranscriptionBot.Domain.csproj" />
     <Project Path="src/MeetingTranscriptionBot.Infrastructure/MeetingTranscriptionBot.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MeetingTranscriptionBot.API.IntegrationTests/MeetingTranscriptionBot.API.IntegrationTests.csproj" />
+  </Folder>
 </Solution>

@@ -1,8 +1,8 @@
-﻿using FluentValidation;
+﻿using AutoMapper;
+using FluentValidation;
 using MediatR;
-using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 using MeetingTranscriptionBot.Application.Behaviors;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MeetingTranscriptionBot.Application.DependencyInjection;
 
@@ -20,13 +20,17 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssembly(assembly);
 
-        services.AddTransient(
-          typeof(IPipelineBehavior<,>),
-          typeof(ValidationBehavior<,>));
+        services.AddAutoMapper(
+            configuration => { },
+            assembly);
 
         services.AddTransient(
-          typeof(IPipelineBehavior<,>),
-          typeof(LoggingBehavior<,>));
+            typeof(IPipelineBehavior<,>),
+            typeof(ValidationBehavior<,>));
+
+        services.AddTransient(
+            typeof(IPipelineBehavior<,>),
+            typeof(LoggingBehavior<,>));
 
         return services;
     }

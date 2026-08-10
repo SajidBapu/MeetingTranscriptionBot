@@ -1,18 +1,20 @@
 ﻿using MediatR;
 using MeetingTranscriptionBot.Application.Interfaces;
 
-namespace MeetingTranscriptionBot.Application.Features.Meetings
-    .Commands.UpdateMeetingStatus;
+namespace MeetingTranscriptionBot.Application.Features.Meetings.Commands.UpdateMeetingStatus;
 
 public sealed class UpdateMeetingStatusCommandHandler
     : IRequestHandler<UpdateMeetingStatusCommand, bool>
 {
     private readonly IMeetingRepository _repository;
+    private readonly ICurrentUserService _currentUserService;
 
     public UpdateMeetingStatusCommandHandler(
-        IMeetingRepository repository)
+        IMeetingRepository repository,
+        ICurrentUserService currentUserService)
     {
         _repository = repository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<bool> Handle(
@@ -21,6 +23,7 @@ public sealed class UpdateMeetingStatusCommandHandler
     {
         var meeting = await _repository.GetByIdAsync(
             request.Id,
+            _currentUserService.UserId,
             cancellationToken);
 
         if (meeting is null)

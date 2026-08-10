@@ -7,14 +7,15 @@ public sealed class UpdateMeetingCommandHandler
     : IRequestHandler<UpdateMeetingCommand, bool>
 {
     private readonly IMeetingRepository _repository;
-
+    private readonly ICurrentUserService _currentUserService;
 
     public UpdateMeetingCommandHandler(
-        IMeetingRepository repository)
+        IMeetingRepository repository,
+        ICurrentUserService currentUserService)
     {
         _repository = repository;
+        _currentUserService = currentUserService;
     }
-
 
     public async Task<bool> Handle(
         UpdateMeetingCommand request,
@@ -22,14 +23,13 @@ public sealed class UpdateMeetingCommandHandler
     {
         var meeting = await _repository.GetByIdAsync(
             request.Id,
+            _currentUserService.UserId,
             cancellationToken);
-
 
         if (meeting is null)
         {
             return false;
         }
-
 
         meeting.UpdateDetails(
             request.Title,
@@ -38,11 +38,9 @@ public sealed class UpdateMeetingCommandHandler
             request.ScheduledStartTime,
             request.ScheduledEndTime);
 
-
         await _repository.UpdateAsync(
             meeting,
             cancellationToken);
-
 
         return true;
     }

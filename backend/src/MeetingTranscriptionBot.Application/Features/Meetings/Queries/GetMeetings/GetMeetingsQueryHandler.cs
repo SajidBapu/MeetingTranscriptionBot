@@ -9,11 +9,14 @@ public sealed class GetMeetingsQueryHandler
     : IRequestHandler<GetMeetingsQuery, PagedResult<MeetingDto>>
 {
     private readonly IMeetingRepository _repository;
+    private readonly ICurrentUserService _currentUserService;
 
     public GetMeetingsQueryHandler(
-        IMeetingRepository repository)
+        IMeetingRepository repository,
+        ICurrentUserService currentUserService)
     {
         _repository = repository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<PagedResult<MeetingDto>> Handle(
@@ -21,6 +24,7 @@ public sealed class GetMeetingsQueryHandler
         CancellationToken cancellationToken)
     {
         var result = await _repository.GetAllAsync(
+            _currentUserService.UserId,
             request.PageNumber,
             request.PageSize,
             cancellationToken);

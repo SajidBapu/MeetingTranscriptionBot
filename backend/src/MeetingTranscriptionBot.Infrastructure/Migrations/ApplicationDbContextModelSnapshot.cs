@@ -40,6 +40,9 @@ namespace MeetingTranscriptionBot.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Platform")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -63,6 +66,8 @@ namespace MeetingTranscriptionBot.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
 
                     b.ToTable("meetings", (string)null);
                 });
@@ -89,6 +94,43 @@ namespace MeetingTranscriptionBot.Infrastructure.Migrations
                     b.HasIndex("MeetingId");
 
                     b.ToTable("meeting_status_histories", (string)null);
+                });
+
+            modelBuilder.Entity("MeetingTranscriptionBot.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ReplacedByTokenHash")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime?>("RevokedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("MeetingTranscriptionBot.Infrastructure.Identity.ApplicationUser", b =>
@@ -297,6 +339,15 @@ namespace MeetingTranscriptionBot.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("MeetingTranscriptionBot.Domain.Entities.Meeting", b =>
+                {
+                    b.HasOne("MeetingTranscriptionBot.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("MeetingTranscriptionBot.Domain.Entities.MeetingStatusHistory", b =>
                 {
                     b.HasOne("MeetingTranscriptionBot.Domain.Entities.Meeting", "Meeting")
@@ -306,6 +357,15 @@ namespace MeetingTranscriptionBot.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Meeting");
+                });
+
+            modelBuilder.Entity("MeetingTranscriptionBot.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("MeetingTranscriptionBot.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

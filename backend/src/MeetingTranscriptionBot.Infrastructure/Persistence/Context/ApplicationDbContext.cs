@@ -14,6 +14,9 @@ public sealed class ApplicationDbContext
 {
     public DbSet<Meeting> Meetings => Set<Meeting>();
 
+    public DbSet<RefreshToken> RefreshTokens =>
+    Set<RefreshToken>();
+
     public DbSet<MeetingStatusHistory> MeetingStatusHistories =>
         Set<MeetingStatusHistory>();
 

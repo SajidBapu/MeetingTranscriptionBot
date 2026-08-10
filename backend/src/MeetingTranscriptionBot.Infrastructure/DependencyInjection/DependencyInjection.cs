@@ -1,10 +1,12 @@
 ﻿using MeetingTranscriptionBot.Application.Interfaces;
 using MeetingTranscriptionBot.Infrastructure.Identity;
+using MeetingTranscriptionBot.Infrastructure.Services.Security;
 using MeetingTranscriptionBot.Infrastructure.Persistence.Context;
 using MeetingTranscriptionBot.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
+using MeetingTranscriptionBot.Infrastructure.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +23,49 @@ public static class DependencyInjection
                 "DefaultConnection")
             ?? throw new InvalidOperationException(
                 "The DefaultConnection connection string is missing.");
+
+        services.AddOptions<JwtSettings>()
+    .Bind(
+        configuration.GetSection(
+            JwtSettings.SectionName))
+    .Validate(
+        settings =>
+            !string.IsNullOrWhiteSpace(settings.Issuer),
+        "JWT issuer is required.")
+    .Validate(
+        settings =>
+            !string.IsNullOrWhiteSpace(settings.Audience),
+        "JWT audience is required.")
+    .Validate(
+        settings =>
+            !string.IsNullOrWhiteSpace(settings.Key),
+        "JWT signing key is required.")
+    .Validate(
+        settings =>
+            settings.AccessTokenExpirationMinutes
+                is >= 5 and <= 60,
+        "JWT expiration must be between 5 and 60 minutes.")
+    
+    .Validate(
+    settings =>
+        settings.RefreshTokenExpirationDays
+            is >= 1 and <= 30,
+      "Refresh token expiration must be between 1 and 30 days.")
+    .ValidateOnStart();
+
+        services.AddSingleton(TimeProvider.System);
+
+        services.AddScoped<
+            IJwtTokenGenerator,
+            JwtTokenGenerator>();
+
+        services.AddScoped<
+            IRefreshTokenService,
+            RefreshTokenService>();
+
+        services.AddScoped<
+           IRefreshTokenRepository,
+           RefreshTokenRepository>();
 
         services.AddDbContext<ApplicationDbContext>(
             options =>

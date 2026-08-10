@@ -10,4 +10,9 @@ public interface IIdentityService
         string email,
         string password,
         CancellationToken cancellationToken);
+
+    Task<LoginResult> LoginAsync(
+        string email,
+        string password,
+        CancellationToken cancellationToken);
 }

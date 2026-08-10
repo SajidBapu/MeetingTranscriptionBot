@@ -38,5 +38,17 @@ public sealed class UpdateMeetingCommandValidator
             .Must(x => x.ScheduledEndTime > x.ScheduledStartTime)
             .WithMessage(
                 "Scheduled end time must be after start time.");
+
+        RuleFor(x => x.Description)
+           .MaximumLength(1000)
+           .WithMessage(
+           "Description cannot exceed 1000 characters.");
+
+        RuleFor(x => x.Platform)
+            .NotEmpty()
+            .WithMessage("Meeting platform is required.")
+            .MaximumLength(50)
+            .WithMessage(
+                "Meeting platform cannot exceed 50 characters.");
     }
 }

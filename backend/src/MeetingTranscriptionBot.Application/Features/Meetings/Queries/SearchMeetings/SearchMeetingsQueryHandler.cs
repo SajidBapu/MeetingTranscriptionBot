@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using AutoMapper;
 using MeetingTranscriptionBot.Application.Common.Models;
 using MeetingTranscriptionBot.Application.Features.Meetings.DTOs;
 using MeetingTranscriptionBot.Application.Interfaces;
@@ -9,12 +10,18 @@ public sealed class SearchMeetingsQueryHandler
     : IRequestHandler<SearchMeetingsQuery, PagedResult<MeetingDto>>
 {
     private readonly IMeetingRepository _repository;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IMapper _mapper;
 
 
     public SearchMeetingsQueryHandler(
-        IMeetingRepository repository)
+    IMeetingRepository repository,
+    ICurrentUserService currentUserService,
+    IMapper mapper)
     {
         _repository = repository;
+        _currentUserService = currentUserService;
+        _mapper = mapper;
     }
 
 
@@ -23,14 +30,15 @@ public sealed class SearchMeetingsQueryHandler
         CancellationToken cancellationToken)
     {
         var result = await _repository.SearchAsync(
-            request.Title,
-            request.Platform,
-            request.Status,
-            request.StartDate,
-            request.EndDate,
-            request.PageNumber,
-            request.PageSize,
-            cancellationToken);
+              _currentUserService.UserId,
+              request.Title,
+              request.Platform,
+              request.Status,
+              request.StartDate,
+              request.EndDate,
+              request.PageNumber,
+              request.PageSize,
+              cancellationToken);
 
 
         var items = result.Items

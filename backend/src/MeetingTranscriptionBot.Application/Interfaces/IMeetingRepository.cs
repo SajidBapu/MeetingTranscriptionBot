@@ -6,12 +6,14 @@ public interface IMeetingRepository
 {
     Task<Meeting?> GetByIdAsync(
         Guid id,
+        Guid ownerId,
         CancellationToken cancellationToken);
 
     Task<(List<Meeting> Items, int TotalCount)> GetAllAsync(
-         int pageNumber,
-         int pageSize,
-         CancellationToken cancellationToken);
+        Guid ownerId,
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken);
 
     Task AddAsync(
         Meeting meeting,
@@ -22,6 +24,7 @@ public interface IMeetingRepository
         CancellationToken cancellationToken);
 
     Task<(List<Meeting> Items, int TotalCount)> SearchAsync(
+        Guid ownerId,
         string? title,
         string? platform,
         string? status,
@@ -33,10 +36,12 @@ public interface IMeetingRepository
 
     Task<Meeting?> GetDeletedByIdAsync(
         Guid id,
+        Guid ownerId,
         CancellationToken cancellationToken);
 
     Task<List<MeetingStatusHistory>> GetStatusHistoryAsync(
     Guid meetingId,
+    Guid ownerId,
     CancellationToken cancellationToken);
 
 }

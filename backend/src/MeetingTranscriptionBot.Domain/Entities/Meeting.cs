@@ -7,6 +7,8 @@ public class Meeting
 {
     public Guid Id { get; private set; }
 
+    public Guid OwnerId { get; private set; }
+
     public string Title { get; private set; }
 
     public string? Description { get; private set; }
@@ -38,17 +40,30 @@ public class Meeting
 
 
     public Meeting(
+        Guid ownerId,
         string title,
         string? description,
         string platform,
         DateTime scheduledStartTime,
         DateTime scheduledEndTime)
     {
+        if (ownerId == Guid.Empty)
+        {
+            throw new BusinessRuleException(
+                "A valid meeting owner is required.");
+        }
+
+        ValidateSchedule(
+        scheduledStartTime,
+        scheduledEndTime);
+
         Id = Guid.NewGuid();
 
         Title = title;
 
         Description = description;
+
+        OwnerId = ownerId;
 
         Platform = platform;
 
@@ -85,6 +100,10 @@ public class Meeting
     DateTime scheduledStartTime,
     DateTime scheduledEndTime)
     {
+        ValidateSchedule(
+        scheduledStartTime,
+        scheduledEndTime);
+
         Title = title;
         Description = description;
         Platform = platform;

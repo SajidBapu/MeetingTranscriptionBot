@@ -10,12 +10,15 @@ using MeetingTranscriptionBot.Application.Features.Meetings.Queries.SearchMeetin
 using MeetingTranscriptionBot.Application.Features.Meetings.Commands.RestoreMeeting;
 using MeetingTranscriptionBot.Application.Features.Meetings.Queries.GetMeetingStatusHistory;
 using MeetingTranscriptionBot.Application.Common.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MeetingTranscriptionBot.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
+[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 public class MeetingsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -212,6 +215,12 @@ public class MeetingsController : ControllerBase
             new GetMeetingStatusHistoryQuery(id),
             cancellationToken);
 
+        if (history is null)
+        {
+            return NotFound(
+                ApiResponse<List<MeetingStatusHistoryDto>>.Fail(
+                    "Meeting not found."));
+        }
 
         return Ok(
             ApiResponse<List<MeetingStatusHistoryDto>>.Ok(

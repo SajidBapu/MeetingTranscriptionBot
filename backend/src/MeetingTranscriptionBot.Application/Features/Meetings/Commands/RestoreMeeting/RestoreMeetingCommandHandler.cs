@@ -7,14 +7,15 @@ public sealed class RestoreMeetingCommandHandler
     : IRequestHandler<RestoreMeetingCommand, bool>
 {
     private readonly IMeetingRepository _repository;
-
+    private readonly ICurrentUserService _currentUserService;
 
     public RestoreMeetingCommandHandler(
-        IMeetingRepository repository)
+        IMeetingRepository repository,
+        ICurrentUserService currentUserService)
     {
         _repository = repository;
+        _currentUserService = currentUserService;
     }
-
 
     public async Task<bool> Handle(
         RestoreMeetingCommand request,
@@ -22,22 +23,19 @@ public sealed class RestoreMeetingCommandHandler
     {
         var meeting = await _repository.GetDeletedByIdAsync(
             request.Id,
+            _currentUserService.UserId,
             cancellationToken);
-
 
         if (meeting is null)
         {
             return false;
         }
 
-
         meeting.Restore();
-
 
         await _repository.UpdateAsync(
             meeting,
             cancellationToken);
-
 
         return true;
     }

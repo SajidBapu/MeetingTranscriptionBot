@@ -1,5 +1,6 @@
 ﻿using MeetingTranscriptionBot.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using MeetingTranscriptionBot.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace MeetingTranscriptionBot.Infrastructure.Persistence.Configurations;
@@ -18,6 +19,17 @@ public class MeetingConfiguration
 
         builder.Property(x => x.Id)
             .ValueGeneratedNever();
+
+        builder.Property(x => x.OwnerId)
+            .IsRequired();
+
+        builder.HasIndex(x => x.OwnerId);
+
+        builder.HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(x => x.OwnerId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
 
         builder.Property(x => x.Title)

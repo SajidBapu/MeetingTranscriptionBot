@@ -17,29 +17,34 @@ public class MeetingRepository : IMeetingRepository
 
 
     public async Task<Meeting?> GetByIdAsync(
-    Guid id,
-    CancellationToken cancellationToken)
+       Guid id,
+       Guid ownerId,
+       CancellationToken cancellationToken)
     {
         return await _context.Meetings
             .Include(x => x.StatusHistory)
             .FirstOrDefaultAsync(
-                x => x.Id == id,
+                x => x.Id == id &&
+                     x.OwnerId == ownerId,
                 cancellationToken);
     }
 
 
     public async Task<(List<Meeting> Items, int TotalCount)> GetAllAsync(
+    Guid ownerId,
     int pageNumber,
     int pageSize,
     CancellationToken cancellationToken)
     {
-        var totalCount = await _context.Meetings
-            .Where(x => !x.IsDeleted)
-            .CountAsync(cancellationToken);
+        var query = _context.Meetings
+            .AsNoTracking()
+            .Where(x => x.OwnerId == ownerId);
 
-        var meetings = await _context.Meetings
-            .Where(x => !x.IsDeleted)
-            .OrderBy(x => x.CreatedAt)
+        var totalCount = await query.CountAsync(
+            cancellationToken);
+
+        var meetings = await query
+            .OrderByDescending(x => x.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
@@ -71,6 +76,7 @@ public class MeetingRepository : IMeetingRepository
 
 
     public async Task<(List<Meeting> Items, int TotalCount)> SearchAsync(
+    Guid ownerId,
     string? title,
     string? platform,
     string? status,
@@ -81,15 +87,16 @@ public class MeetingRepository : IMeetingRepository
     CancellationToken cancellationToken)
     {
         var query = _context.Meetings
-            .AsQueryable();
-
+            .AsNoTracking()
+            .Where(x => x.OwnerId == ownerId);
 
         if (!string.IsNullOrWhiteSpace(title))
         {
             query = query.Where(x =>
-                x.Title.Contains(title));
+                EF.Functions.ILike(
+                    x.Title,
+                    $"%{title}%"));
         }
-
 
         if (!string.IsNullOrWhiteSpace(platform))
         {
@@ -97,13 +104,11 @@ public class MeetingRepository : IMeetingRepository
                 x.Platform == platform);
         }
 
-
         if (!string.IsNullOrWhiteSpace(status))
         {
             query = query.Where(x =>
                 x.Status.ToString() == status);
         }
-
 
         if (startDate.HasValue)
         {
@@ -111,17 +116,14 @@ public class MeetingRepository : IMeetingRepository
                 x.ScheduledStartTime >= startDate.Value);
         }
 
-
         if (endDate.HasValue)
         {
             query = query.Where(x =>
                 x.ScheduledEndTime <= endDate.Value);
         }
 
-
         var totalCount = await query.CountAsync(
             cancellationToken);
-
 
         var items = await query
             .OrderByDescending(x => x.CreatedAt)
@@ -129,27 +131,34 @@ public class MeetingRepository : IMeetingRepository
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-
         return (items, totalCount);
     }
 
     public async Task<Meeting?> GetDeletedByIdAsync(
     Guid id,
+    Guid ownerId,
     CancellationToken cancellationToken)
     {
         return await _context.Meetings
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(
-                x => x.Id == id && x.IsDeleted,
+                x => x.Id == id &&
+                     x.OwnerId == ownerId &&
+                     x.IsDeleted,
                 cancellationToken);
     }
 
+
     public async Task<List<MeetingStatusHistory>> GetStatusHistoryAsync(
     Guid meetingId,
+    Guid ownerId,
     CancellationToken cancellationToken)
     {
-        return await _context.Set<MeetingStatusHistory>()
-            .Where(x => x.MeetingId == meetingId)
+        return await _context.MeetingStatusHistories
+            .AsNoTracking()
+            .Where(x =>
+                x.MeetingId == meetingId &&
+                x.Meeting!.OwnerId == ownerId)
             .OrderBy(x => x.ChangedAt)
             .ToListAsync(cancellationToken);
     }

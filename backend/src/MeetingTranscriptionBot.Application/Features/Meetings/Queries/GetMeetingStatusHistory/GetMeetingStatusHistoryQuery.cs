@@ -5,4 +5,4 @@ namespace MeetingTranscriptionBot.Application.Features.Meetings.Queries.GetMeeti
 
 public sealed record GetMeetingStatusHistoryQuery(
     Guid MeetingId
-) : IRequest<List<MeetingStatusHistoryDto>>;
+) : IRequest<List<MeetingStatusHistoryDto>?>;
