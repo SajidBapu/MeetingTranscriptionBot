@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using FluentAssertions;
 using MeetingTranscriptionBot.API.IntegrationTests.Infrastructure;
 
@@ -71,6 +72,189 @@ public sealed class AuthenticationTests
             "\"accessToken\"");
 
         responseBody.Should().Contain(
+            "\"refreshToken\"");
+
+        responseBody.Should().Contain(
             registerRequest.email);
+    }
+
+    [Fact]
+    public async Task Refresh_WithValidRefreshToken_RotatesToken_AndOldTokenFails()
+    {
+        var email =
+            $"refresh.{Guid.NewGuid()}@example.com";
+
+        const string password =
+            "Secure@Test2026!";
+
+        var registerRequest = new
+        {
+            firstName = "Refresh",
+            lastName = "User",
+            email,
+            password
+        };
+
+        var registerResponse =
+            await _client.PostAsJsonAsync(
+                "/api/auth/register",
+                registerRequest);
+
+        registerResponse.StatusCode.Should().Be(
+            HttpStatusCode.Created);
+
+        var loginResponse =
+            await _client.PostAsJsonAsync(
+                "/api/auth/login",
+                new
+                {
+                    email,
+                    password
+                });
+
+        loginResponse.StatusCode.Should().Be(
+            HttpStatusCode.OK);
+
+        var loginJson =
+            await loginResponse.Content
+                .ReadFromJsonAsync<JsonElement>();
+
+        var firstAccessToken =
+            loginJson
+                .GetProperty("data")
+                .GetProperty("accessToken")
+                .GetString();
+
+        var firstRefreshToken =
+            loginJson
+                .GetProperty("data")
+                .GetProperty("refreshToken")
+                .GetString();
+
+        firstAccessToken.Should()
+            .NotBeNullOrWhiteSpace();
+
+        firstRefreshToken.Should()
+            .NotBeNullOrWhiteSpace();
+
+        var firstRefreshResponse =
+            await _client.PostAsJsonAsync(
+                "/api/auth/refresh",
+                new
+                {
+                    refreshToken =
+                        firstRefreshToken
+                });
+
+        firstRefreshResponse.StatusCode.Should().Be(
+            HttpStatusCode.OK);
+
+        var refreshJson =
+            await firstRefreshResponse.Content
+                .ReadFromJsonAsync<JsonElement>();
+
+        var secondAccessToken =
+            refreshJson
+                .GetProperty("data")
+                .GetProperty("accessToken")
+                .GetString();
+
+        var secondRefreshToken =
+            refreshJson
+                .GetProperty("data")
+                .GetProperty("refreshToken")
+                .GetString();
+
+        secondAccessToken.Should()
+            .NotBeNullOrWhiteSpace();
+
+        secondRefreshToken.Should()
+            .NotBeNullOrWhiteSpace();
+
+        secondRefreshToken.Should()
+            .NotBe(firstRefreshToken);
+
+        var reuseOldTokenResponse =
+            await _client.PostAsJsonAsync(
+                "/api/auth/refresh",
+                new
+                {
+                    refreshToken =
+                        firstRefreshToken
+                });
+
+        reuseOldTokenResponse.StatusCode.Should().Be(
+            HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Logout_WithValidRefreshToken_RevokesToken()
+    {
+        var email =
+            $"logout.{Guid.NewGuid()}@example.com";
+
+        const string password =
+            "Secure@Test2026!";
+
+        var registerResponse =
+            await _client.PostAsJsonAsync(
+                "/api/auth/register",
+                new
+                {
+                    firstName = "Logout",
+                    lastName = "User",
+                    email,
+                    password
+                });
+
+        registerResponse.StatusCode.Should().Be(
+            HttpStatusCode.Created);
+
+        var loginResponse =
+            await _client.PostAsJsonAsync(
+                "/api/auth/login",
+                new
+                {
+                    email,
+                    password
+                });
+
+        loginResponse.StatusCode.Should().Be(
+            HttpStatusCode.OK);
+
+        var loginJson =
+            await loginResponse.Content
+                .ReadFromJsonAsync<JsonElement>();
+
+        var refreshToken =
+            loginJson
+                .GetProperty("data")
+                .GetProperty("refreshToken")
+                .GetString();
+
+        refreshToken.Should()
+            .NotBeNullOrWhiteSpace();
+
+        var logoutResponse =
+            await _client.PostAsJsonAsync(
+                "/api/auth/logout",
+                new
+                {
+                    refreshToken
+                });
+
+        logoutResponse.StatusCode.Should().Be(
+            HttpStatusCode.OK);
+
+        var refreshAfterLogoutResponse =
+            await _client.PostAsJsonAsync(
+                "/api/auth/refresh",
+                new
+                {
+                    refreshToken
+                });
+
+        refreshAfterLogoutResponse.StatusCode.Should().Be(
+            HttpStatusCode.Unauthorized);
     }
 }

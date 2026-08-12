@@ -155,4 +155,128 @@ public sealed class IdentityService : IIdentityService
             refreshToken,
             refreshTokenExpiresAtUtc);
     }
+
+    public async Task<LoginResult> RefreshTokenAsync(
+    string refreshToken,
+    CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            return LoginResult.Failure(
+                "Invalid refresh token.");
+        }
+
+        var refreshTokenHash =
+            _refreshTokenService.HashToken(
+                refreshToken);
+
+        var storedRefreshToken =
+            await _refreshTokenRepository.GetByTokenHashAsync(
+                refreshTokenHash,
+                cancellationToken);
+
+        if (storedRefreshToken is null ||
+            !storedRefreshToken.IsActive)
+        {
+            return LoginResult.Failure(
+                "Invalid or expired refresh token.");
+        }
+
+        var user =
+            await _userManager.FindByIdAsync(
+                storedRefreshToken.UserId.ToString());
+
+        if (user is null)
+        {
+            return LoginResult.Failure(
+                "Invalid refresh token.");
+        }
+
+        var roles =
+            await _userManager.GetRolesAsync(user);
+
+        var accessToken =
+            _jwtTokenGenerator.GenerateAccessToken(
+                user.Id,
+                user.Email ?? string.Empty,
+                user.FirstName,
+                user.LastName,
+                roles.ToArray());
+
+        var newRefreshToken =
+            _refreshTokenService.GenerateToken();
+
+        var newRefreshTokenHash =
+            _refreshTokenService.HashToken(
+                newRefreshToken);
+
+        var newRefreshTokenExpiresAtUtc =
+            DateTime.UtcNow.AddDays(
+                _jwtSettings.RefreshTokenExpirationDays);
+
+        storedRefreshToken.Revoke(
+            newRefreshTokenHash);
+
+        var newRefreshTokenEntity =
+            new RefreshToken(
+                user.Id,
+                newRefreshTokenHash,
+                newRefreshTokenExpiresAtUtc);
+
+        await _refreshTokenRepository.AddAsync(
+            newRefreshTokenEntity,
+            cancellationToken);
+
+        await _refreshTokenRepository.SaveChangesAsync(
+            cancellationToken);
+
+        return LoginResult.Success(
+            user.Id,
+            user.FirstName,
+            user.LastName,
+            user.Email ?? string.Empty,
+            accessToken,
+            newRefreshToken,
+            newRefreshTokenExpiresAtUtc);
+    }
+
+    public async Task<bool> LogoutAsync(
+    string refreshToken,
+    CancellationToken cancellationToken)
+{
+    cancellationToken.ThrowIfCancellationRequested();
+
+    if (string.IsNullOrWhiteSpace(refreshToken))
+    {
+        return false;
+    }
+
+    var refreshTokenHash =
+        _refreshTokenService.HashToken(
+            refreshToken);
+
+    var storedRefreshToken =
+        await _refreshTokenRepository.GetByTokenHashAsync(
+            refreshTokenHash,
+            cancellationToken);
+
+    if (storedRefreshToken is null)
+    {
+        return false;
+    }
+
+    if (!storedRefreshToken.IsActive)
+    {
+        return false;
+    }
+
+    storedRefreshToken.Revoke();
+
+    await _refreshTokenRepository.SaveChangesAsync(
+        cancellationToken);
+
+    return true;
+}
 }
