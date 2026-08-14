@@ -1,12 +1,14 @@
 ﻿using MeetingTranscriptionBot.Application.Interfaces;
+using MeetingTranscriptionBot.Infrastructure.Authentication;
 using MeetingTranscriptionBot.Infrastructure.Identity;
-using MeetingTranscriptionBot.Infrastructure.Services.Security;
 using MeetingTranscriptionBot.Infrastructure.Persistence.Context;
 using MeetingTranscriptionBot.Infrastructure.Repositories;
+using MeetingTranscriptionBot.Infrastructure.Services.Security;
+using MeetingTranscriptionBot.Infrastructure.Services.Speech;
+using MeetingTranscriptionBot.Infrastructure.Services.Storage;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.DataProtection;
-using MeetingTranscriptionBot.Infrastructure.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,40 +20,59 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services
+            .AddOptions<AzureSpeechSettings>()
+            .Bind(
+                configuration.GetSection(
+                    AzureSpeechSettings.SectionName))
+            .Validate(
+                settings =>
+                    !string.IsNullOrWhiteSpace(settings.Key),
+                "Azure Speech key is required.")
+            .Validate(
+                settings =>
+                    !string.IsNullOrWhiteSpace(settings.Region),
+                "Azure Speech region is required.")
+            .Validate(
+                settings =>
+                    !string.IsNullOrWhiteSpace(settings.Endpoint),
+                "Azure Speech endpoint is required.")
+            .ValidateOnStart();
+
         var connectionString =
             configuration.GetConnectionString(
                 "DefaultConnection")
             ?? throw new InvalidOperationException(
                 "The DefaultConnection connection string is missing.");
 
-        services.AddOptions<JwtSettings>()
-    .Bind(
-        configuration.GetSection(
-            JwtSettings.SectionName))
-    .Validate(
-        settings =>
-            !string.IsNullOrWhiteSpace(settings.Issuer),
-        "JWT issuer is required.")
-    .Validate(
-        settings =>
-            !string.IsNullOrWhiteSpace(settings.Audience),
-        "JWT audience is required.")
-    .Validate(
-        settings =>
-            !string.IsNullOrWhiteSpace(settings.Key),
-        "JWT signing key is required.")
-    .Validate(
-        settings =>
-            settings.AccessTokenExpirationMinutes
-                is >= 5 and <= 60,
-        "JWT expiration must be between 5 and 60 minutes.")
-    
-    .Validate(
-    settings =>
-        settings.RefreshTokenExpirationDays
-            is >= 1 and <= 30,
-      "Refresh token expiration must be between 1 and 30 days.")
-    .ValidateOnStart();
+        services
+            .AddOptions<JwtSettings>()
+            .Bind(
+                configuration.GetSection(
+                    JwtSettings.SectionName))
+            .Validate(
+                settings =>
+                    !string.IsNullOrWhiteSpace(settings.Issuer),
+                "JWT issuer is required.")
+            .Validate(
+                settings =>
+                    !string.IsNullOrWhiteSpace(settings.Audience),
+                "JWT audience is required.")
+            .Validate(
+                settings =>
+                    !string.IsNullOrWhiteSpace(settings.Key),
+                "JWT signing key is required.")
+            .Validate(
+                settings =>
+                    settings.AccessTokenExpirationMinutes
+                        is >= 5 and <= 60,
+                "JWT expiration must be between 5 and 60 minutes.")
+            .Validate(
+                settings =>
+                    settings.RefreshTokenExpirationDays
+                        is >= 1 and <= 30,
+                "Refresh token expiration must be between 1 and 30 days.")
+            .ValidateOnStart();
 
         services.AddSingleton(TimeProvider.System);
 
@@ -64,8 +85,24 @@ public static class DependencyInjection
             RefreshTokenService>();
 
         services.AddScoped<
-           IRefreshTokenRepository,
-           RefreshTokenRepository>();
+            IRefreshTokenRepository,
+            RefreshTokenRepository>();
+
+        services.AddScoped<
+            IMeetingRecordingRepository,
+            MeetingRecordingRepository>();
+
+        services.AddScoped<
+            ITranscriptRepository,
+            TranscriptRepository>();
+
+        services.AddScoped<
+            IFileStorageService,
+            LocalFileStorageService>();
+
+        services.AddScoped<
+            ITranscriptionService,
+            AzureSpeechTranscriptionService>();
 
         services.AddDbContext<ApplicationDbContext>(
             options =>
@@ -73,7 +110,8 @@ public static class DependencyInjection
                 options.UseNpgsql(connectionString);
             });
 
-        services.AddIdentityCore<ApplicationUser>(
+        services
+            .AddIdentityCore<ApplicationUser>(
                 options =>
                 {
                     options.Password.RequiredLength = 12;
@@ -96,9 +134,10 @@ public static class DependencyInjection
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddSignInManager();
-        //.AddDefaultTokenProviders();
 
-        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<
+            IIdentityService,
+            IdentityService>();
 
         services.AddScoped<
             IMeetingRepository,

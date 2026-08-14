@@ -14,6 +14,15 @@ public sealed class ApplicationDbContext
 {
     public DbSet<Meeting> Meetings => Set<Meeting>();
 
+    public DbSet<MeetingRecording> MeetingRecordings =>
+    Set<MeetingRecording>();
+
+    public DbSet<Transcript> Transcripts =>
+        Set<Transcript>();
+
+    public DbSet<TranscriptSegment> TranscriptSegments =>
+        Set<TranscriptSegment>();
+
     public DbSet<RefreshToken> RefreshTokens =>
     Set<RefreshToken>();
 
@@ -34,9 +43,17 @@ public sealed class ApplicationDbContext
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(ApplicationDbContext).Assembly);
 
-        modelBuilder.Entity<Meeting>()
+        modelBuilder.Entity<MeetingRecording>()
+           .HasQueryFilter(
+        recording => !recording.Meeting!.IsDeleted);
+
+        modelBuilder.Entity<Transcript>()
             .HasQueryFilter(
-                meeting => !meeting.IsDeleted);
+                transcript => !transcript.Meeting!.IsDeleted);
+
+        modelBuilder.Entity<TranscriptSegment>()
+            .HasQueryFilter(
+                segment => !segment.Transcript!.Meeting!.IsDeleted);
 
         modelBuilder.Entity<MeetingStatusHistory>()
             .HasQueryFilter(

@@ -2,6 +2,9 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using MeetingTranscriptionBot.Application.Interfaces;
+using MeetingTranscriptionBot.Infrastructure.Services.Speech;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -41,6 +44,18 @@ public sealed class MeetingTranscriptionBotWebApplicationFactory
             "15");
 
         Environment.SetEnvironmentVariable(
+    "AzureSpeech__Key",
+    "integration-test-azure-speech-key");
+
+        Environment.SetEnvironmentVariable(
+            "AzureSpeech__Region",
+            "canadacentral");
+
+        Environment.SetEnvironmentVariable(
+            "AzureSpeech__Endpoint",
+            "https://integration-test-speech.invalid");
+
+        Environment.SetEnvironmentVariable(
             "ConnectionStrings__DefaultConnection",
             "Host=localhost;Database=unused;Username=test;Password=test");
     }
@@ -65,6 +80,15 @@ public sealed class MeetingTranscriptionBotWebApplicationFactory
                 {
                     options.UseInMemoryDatabase(_databaseName);
                 });
+        });
+
+        builder.ConfigureTestServices(services =>
+        {
+            services.RemoveAll<ITranscriptionService>();
+
+            services.AddScoped<
+                ITranscriptionService,
+                DevelopmentTranscriptionService>();
         });
     }
 
@@ -112,5 +136,17 @@ public sealed class MeetingTranscriptionBotWebApplicationFactory
         Environment.SetEnvironmentVariable(
              "Jwt__RefreshTokenExpirationDays",
              null);
+
+        Environment.SetEnvironmentVariable(
+             "AzureSpeech__Key",
+             null);
+
+        Environment.SetEnvironmentVariable(
+            "AzureSpeech__Region",
+            null);
+
+        Environment.SetEnvironmentVariable(
+            "AzureSpeech__Endpoint",
+            null);
     }
 }
