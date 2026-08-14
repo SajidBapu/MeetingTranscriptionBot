@@ -101,8 +101,8 @@ public static class DependencyInjection
             LocalFileStorageService>();
 
         services.AddScoped<
-            ITranscriptionService,
-            AzureSpeechTranscriptionService>();
+             ITranscriptionService,
+             AzureDiarizedTranscriptionService>();
 
         services.AddDbContext<ApplicationDbContext>(
             options =>
