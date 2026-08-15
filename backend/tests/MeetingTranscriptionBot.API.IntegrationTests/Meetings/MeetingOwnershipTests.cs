@@ -830,8 +830,9 @@ public sealed class MeetingOwnershipTests
                 $"/api/meetings/{meetingId}/recordings/{recordingId}/transcribe",
                 content: null);
 
-        transcribeResponse.StatusCode.Should().Be(
-            HttpStatusCode.Created);
+        transcribeResponse.StatusCode
+            .Should()
+            .Be(HttpStatusCode.Accepted);
 
         var transcribeJson =
             await transcribeResponse.Content
@@ -839,7 +840,7 @@ public sealed class MeetingOwnershipTests
 
         var transcriptId =
             transcribeJson
-                .GetProperty("id")
+                .GetProperty("transcriptId")
                 .GetGuid();
 
         transcriptId.Should().NotBe(

@@ -5,6 +5,7 @@ public sealed record TranscriptDto(
     Guid MeetingId,
     Guid RecordingId,
     string Language,
+    string Status,
     string? FullText,
     DateTime CreatedAtUtc,
     DateTime? CompletedAtUtc,

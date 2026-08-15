@@ -6,6 +6,7 @@ using MeetingTranscriptionBot.Infrastructure.Repositories;
 using MeetingTranscriptionBot.Infrastructure.Services.Security;
 using MeetingTranscriptionBot.Infrastructure.Services.Speech;
 using MeetingTranscriptionBot.Infrastructure.Services.Storage;
+using MeetingTranscriptionBot.Infrastructure.BackgroundJobs;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -75,6 +76,13 @@ public static class DependencyInjection
             .ValidateOnStart();
 
         services.AddSingleton(TimeProvider.System);
+
+        services.AddSingleton<
+             ITranscriptionBackgroundQueue,
+             TranscriptionBackgroundQueue>();
+
+        services.AddHostedService<
+           TranscriptionBackgroundWorker>();
 
         services.AddScoped<
             IJwtTokenGenerator,

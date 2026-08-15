@@ -53,6 +53,7 @@ public sealed class GetTranscriptByIdQueryHandler
             transcript.MeetingId,
             transcript.RecordingId,
             transcript.Language,
+            transcript.Status,
             transcript.FullText,
             transcript.CreatedAtUtc,
             transcript.CompletedAtUtc,

@@ -41,5 +41,9 @@ public sealed class TranscriptConfiguration
             .HasForeignKey<Transcript>(
                 x => x.RecordingId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Property(x => x.Status)
+             .HasMaxLength(30)
+             .IsRequired();
     }
 }

@@ -97,7 +97,7 @@ public sealed class RecordingsController : ControllerBase
     }
 
     [HttpPost("{recordingId:guid}/transcribe")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -115,12 +115,14 @@ public sealed class RecordingsController : ControllerBase
                         recordingId),
                     cancellationToken);
 
-            return Created(
-                $"/api/meetings/{meetingId}/transcripts/{transcriptId}",
-                new
-                {
-                    id = transcriptId
-                });
+            return Accepted(
+                 $"/api/meetings/{meetingId}/transcripts/{transcriptId}",
+                 new
+        {
+                   transcriptId,
+                   status = "Pending",
+                   message = "Transcription has been queued for background processing."
+            });
         }
         catch (KeyNotFoundException)
         {

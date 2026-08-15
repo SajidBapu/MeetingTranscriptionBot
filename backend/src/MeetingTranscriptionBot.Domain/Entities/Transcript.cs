@@ -51,6 +51,8 @@ public sealed class Transcript
 
     public string? FullText { get; private set; }
 
+    public string Status { get; private set; } = "Pending";
+
     public DateTime CreatedAtUtc { get; private set; }
 
     public DateTime? CompletedAtUtc { get; private set; }
@@ -63,7 +65,7 @@ public sealed class Transcript
         new List<TranscriptSegment>();
 
     public void Complete(
-        string fullText)
+    string fullText)
     {
         if (string.IsNullOrWhiteSpace(fullText))
         {
@@ -74,9 +76,10 @@ public sealed class Transcript
 
         FullText = fullText.Trim();
         CompletedAtUtc = DateTime.UtcNow;
+        Status = "Completed";
     }
 
-    public void AddSegment(
+    public TranscriptSegment AddSegment(
     string text,
     TimeSpan startTime,
     TimeSpan endTime,
@@ -91,5 +94,22 @@ public sealed class Transcript
                 speakerLabel);
 
         Segments.Add(segment);
+
+        return segment;
+    }
+
+    public void MarkProcessing()
+    {
+        Status = "Processing";
+    }
+
+    public void MarkCompleted()
+    {
+        Status = "Completed";
+    }
+
+    public void MarkFailed()
+    {
+        Status = "Failed";
     }
 }
