@@ -1,6 +1,7 @@
 ﻿using MeetingTranscriptionBot.Application.Interfaces;
 using MeetingTranscriptionBot.Infrastructure.Authentication;
 using MeetingTranscriptionBot.Infrastructure.Identity;
+using MeetingTranscriptionBot.Infrastructure.Services.AI;
 using MeetingTranscriptionBot.Infrastructure.Persistence.Context;
 using MeetingTranscriptionBot.Infrastructure.Repositories;
 using MeetingTranscriptionBot.Infrastructure.Services.Security;
@@ -91,6 +92,14 @@ public static class DependencyInjection
         services.AddScoped<
             IRefreshTokenService,
             RefreshTokenService>();
+
+        services.AddScoped<
+            IMeetingIntelligenceService,
+            DevelopmentMeetingIntelligenceService>();
+
+        services.AddScoped<
+             IMeetingAnalysisRepository,
+             MeetingAnalysisRepository>();
 
         services.AddScoped<
             IRefreshTokenRepository,

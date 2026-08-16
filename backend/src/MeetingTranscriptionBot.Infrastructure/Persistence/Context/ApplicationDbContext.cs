@@ -29,6 +29,17 @@ public sealed class ApplicationDbContext
     public DbSet<MeetingStatusHistory> MeetingStatusHistories =>
         Set<MeetingStatusHistory>();
 
+    public DbSet<MeetingAnalysis> MeetingAnalyses => Set<MeetingAnalysis>();
+
+    public DbSet<MeetingAnalysisKeyPoint> MeetingAnalysisKeyPoints =>
+        Set<MeetingAnalysisKeyPoint>();
+
+    public DbSet<MeetingAnalysisDecision> MeetingAnalysisDecisions =>
+        Set<MeetingAnalysisDecision>();
+
+    public DbSet<MeetingActionItem> MeetingActionItems =>
+        Set<MeetingActionItem>();
+
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)
         : base(options)

@@ -14,6 +14,9 @@ public sealed class TranscriptSegmentConfiguration
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.Id)
+             .ValueGeneratedNever();
+
         builder.Property(x => x.Text)
             .HasColumnType("text")
             .IsRequired();
