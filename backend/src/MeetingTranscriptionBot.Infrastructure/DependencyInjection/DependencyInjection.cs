@@ -85,6 +85,39 @@ public static class DependencyInjection
         services.AddHostedService<
            TranscriptionBackgroundWorker>();
 
+        services
+    .AddOptions<OllamaSettings>()
+    .Bind(configuration.GetSection(
+        OllamaSettings.SectionName))
+    .Validate(
+        x => Uri.TryCreate(
+            x.BaseUrl,
+            UriKind.Absolute,
+            out _),
+        "Ollama BaseUrl must be a valid URL.")
+    .Validate(
+        x => !string.IsNullOrWhiteSpace(x.Model),
+        "Ollama model is required.")
+    .ValidateOnStart();
+
+        services.AddHttpClient<
+    IMeetingIntelligenceService,
+    OllamaMeetingIntelligenceService>(
+        (serviceProvider, client) =>
+        {
+            var settings =
+                serviceProvider
+                    .GetRequiredService<
+                        Microsoft.Extensions.Options.IOptions<OllamaSettings>>()
+                    .Value;
+
+            client.BaseAddress =
+                new Uri(settings.BaseUrl);
+
+            client.Timeout =
+                TimeSpan.FromMinutes(5);
+        });
+
         services.AddScoped<
             IJwtTokenGenerator,
             JwtTokenGenerator>();
@@ -92,10 +125,6 @@ public static class DependencyInjection
         services.AddScoped<
             IRefreshTokenService,
             RefreshTokenService>();
-
-        services.AddScoped<
-            IMeetingIntelligenceService,
-            DevelopmentMeetingIntelligenceService>();
 
         services.AddScoped<
              IMeetingAnalysisRepository,
